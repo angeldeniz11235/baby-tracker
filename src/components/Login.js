@@ -22,13 +22,36 @@ function Login() {
     }
   };
 
+  const handleSignupRedirect = () => {
+    navigate('/signup'); // Redirect to the sign-up page
+  };
+
   return (
-    <form onSubmit={handleLogin}>
-      <h2>Login</h2>
-      <input type="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="Email" />
-      <input type="password" value={password} onChange={(e) => setPassword(e.target.value)} placeholder="Password" />
-      <button type="submit">Login</button>
-    </form>
+    <div>
+      <form onSubmit={handleLogin}>
+        <h2>Login</h2>
+        <input
+          type="email"
+          value={email}
+          onChange={(e) => setEmail(e.target.value)}
+          placeholder="Email"
+          required
+        />
+        <input
+          type="password"
+          value={password}
+          onChange={(e) => setPassword(e.target.value)}
+          placeholder="Password"
+          required
+        />
+        <button type="submit">Login</button>
+      </form>
+      
+      <div>
+        <p>Don't have an account?</p>
+        <button onClick={handleSignupRedirect}>Sign Up</button>
+      </div>
+    </div>
   );
 }
 
