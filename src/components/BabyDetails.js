@@ -1,40 +1,39 @@
 // src/components/BabyDetails.js
-import React, { useEffect, useState } from 'react';
-import { useParams } from 'react-router-dom';
-import axios from 'axios';
+import React, { useEffect, useState } from "react";
+import { useParams } from "react-router-dom";
+import axios from "axios";
+import Cookies from "js-cookie";
 
 function BabyDetails() {
-  const { babyId } = useParams(); // Get babyId from URL parameters
-  const [baby, setBaby] = useState(null); // Initialize state to hold baby data
+  const { babyId } = useParams();
+  const [baby, setBaby] = useState(null);
 
   useEffect(() => {
-    const fetchBabyDetails = async () => {
-      const jwt = localStorage.getItem('jwt');
-
-      try {
-        const response = await axios.get(`http://localhost:1337/api/babies/${babyId}`, {
+    const jwt = Cookies.get("jwt");
+    if (jwt) {
+      axios
+        .get(`http://localhost:1337/api/babies/${babyId}`, {
           headers: {
             Authorization: `Bearer ${jwt}`,
           },
+        })
+        .then((response) => {
+          setBaby(response.data.data);
+        })
+        .catch((error) => {
+          console.error("Error fetching baby details:", error.response);
         });
-
-        setBaby(response.data.data); // Set the baby data
-      } catch (error) {
-        console.error('Error fetching baby details:', error.response);
-      }
-    };
-
-    fetchBabyDetails();
+    }
   }, [babyId]);
 
-  if (!baby) {
-    return <div>Loading...</div>; // Show loading indicator while fetching data
-  }
+  if (!baby) return <div>Loading...</div>;
 
   return (
-    <div>
-      <h1>{baby.attributes.name}</h1> {/* Display the baby's name */}
-      {/* Add more baby details here */}
+    <div className="min-h-screen bg-gray-100 p-6">
+      <h2 className="text-2xl font-bold mb-4">{baby.attributes.name}'s Details</h2>
+      <p>Date of Birth: {baby.attributes.date_of_birth}</p>
+      <p>Gender: {baby.attributes.gender}</p>
+      {/* Add more details and styling as needed */}
     </div>
   );
 }
