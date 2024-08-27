@@ -1,5 +1,5 @@
 // src/components/NewBaby.js
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
 import Cookies from 'js-cookie';
@@ -9,24 +9,70 @@ function NewBaby() {
   const [dateOfBirth, setDateOfBirth] = useState('');
   const [gender, setGender] = useState('');
   const [error, setError] = useState('');
+  const [parentId, setParentId] = useState(null);
   const navigate = useNavigate();
+
+  useEffect(() => {
+    const fetchParentId = async () => {
+      const jwt = Cookies.get('jwt');
+      try {
+        const response = await axios.get('http://localhost:1337/api/users/me', {
+          headers: {
+            Authorization: `Bearer ${jwt}`,
+          },
+        });
+        const user = response.data;
+        console.log('Fetched user data:', response.data); // Debugging line
+        if (user && user.id) {
+          // get the parent ID using the user data
+          try {
+            const parentResponse = await axios.get(`http://localhost:1337/api/parents?user=${user.id}`, {
+              headers: {
+                Authorization: `Bearer ${jwt}`,
+              },
+            });
+            console.log('Fetched parent data:', parentResponse.data.data); // Debugging line
+            const parent = parentResponse.data.data;
+            if (parent && parent.length > 0) {
+              setParentId(parent[0].id);
+            }
+            else {
+              setError('Parent information not found for the current user.');
+            }
+          } catch (error) {
+            console.error('Error fetching parent information:', error.response);
+            setError('Failed to fetch parent information. Please try again.');
+          }
+        } else {
+          setError('Parent information not found for the current user.');
+        }
+      } catch (error) {
+        console.error('Error fetching user information:', error.response);
+        setError('Failed to fetch user information. Please try again.');
+      }
+    };
+
+    fetchParentId();
+  }, []);
 
   const handleCreateBaby = async (e) => {
     e.preventDefault();
     const jwt = Cookies.get('jwt');
 
-    if (!name || !dateOfBirth || !gender) {
+    if (!name || !dateOfBirth || !gender || !parentId) {
       setError('All fields are required');
       return;
     }
 
     try {
-      const response = await axios.post('http://localhost:1337/api/babies', 
+      console.log('Creating baby with parent ID:', parentId); // Debugging line
+      await axios.post('http://localhost:1337/api/babies', 
       {
         data: {
           name: name,
           date_of_birth: dateOfBirth,
           gender: gender,
+          parents: parentId,
         }
       }, 
       {

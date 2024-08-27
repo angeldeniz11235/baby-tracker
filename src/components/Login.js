@@ -5,7 +5,7 @@ import Cookies from "js-cookie";
 import { useNavigate } from "react-router-dom";
 
 function Login() {
-  const [email, setEmail] = useState("");
+  const [identifier, setIdentifier] = useState(""); // Updated to handle both username and email
   const [password, setPassword] = useState("");
   const navigate = useNavigate();
 
@@ -14,7 +14,8 @@ function Login() {
     if (jwt) {
       navigate("/dashboard"); // Redirect to dashboard if JWT exists
     }
-  }, [navigate]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const handleLogin = async (e) => {
     e.preventDefault();
@@ -22,7 +23,7 @@ function Login() {
       const response = await axios.post(
         "http://localhost:1337/api/auth/local",
         {
-          identifier: email,
+          identifier: identifier, // Use identifier to handle both username and email
           password: password,
         }
       );
@@ -30,7 +31,20 @@ function Login() {
       Cookies.set("jwt", jwt, { expires: 7 }); // Store the JWT in a cookie
       navigate("/dashboard"); // Redirect after login
     } catch (error) {
-      console.error("An error occurred:", error.response);
+      if (error.response) {
+        // The request was made and the server responded with a status code
+        // that falls out of the range of 2xx
+        console.error("Error response data:", error.response.data);
+        console.error("Error response status:", error.response.status);
+        console.error("Error response headers:", error.response.headers);
+      } else if (error.request) {
+        // The request was made but no response was received
+        console.error("Error request data:", error.request);
+      } else {
+        // Something happened in setting up the request that triggered an Error
+        console.error("Error message:", error.message);
+      }
+      console.error("Error config:", error.config);
     }
   };
 
@@ -46,10 +60,10 @@ function Login() {
       >
         <h2 className="text-xl font-bold mb-4">Login</h2>
         <input
-          type="email"
-          value={email}
-          onChange={(e) => setEmail(e.target.value)}
-          placeholder="Email"
+          type="text"
+          value={identifier}
+          onChange={(e) => setIdentifier(e.target.value)}
+          placeholder="Username or Email"
           required
           className="w-full p-2 mb-4 border rounded"
         />
