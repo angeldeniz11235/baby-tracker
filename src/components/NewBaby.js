@@ -3,6 +3,8 @@ import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
 import Cookies from 'js-cookie';
+import { fetchUserData } from './functions/fetchUserData';
+import { fetchParentData } from './functions/fetchParentData';
 
 function NewBaby() {
   const [name, setName] = useState('');
@@ -16,32 +18,14 @@ function NewBaby() {
     const fetchParentId = async () => {
       const jwt = Cookies.get('jwt');
       try {
-        const response = await axios.get('http://localhost:1337/api/users/me', {
-          headers: {
-            Authorization: `Bearer ${jwt}`,
-          },
-        });
-        const user = response.data;
-        console.log('Fetched user data:', response.data); // Debugging line
+        const user = await fetchUserData(jwt);
+        console.log('Fetched user data:', user); // Debugging line
         if (user && user.id) {
-          // get the parent ID using the user data
-          try {
-            const parentResponse = await axios.get(`http://localhost:1337/api/parents?user=${user.id}`, {
-              headers: {
-                Authorization: `Bearer ${jwt}`,
-              },
-            });
-            console.log('Fetched parent data:', parentResponse.data.data); // Debugging line
-            const parent = parentResponse.data.data;
-            if (parent && parent.length > 0) {
-              setParentId(parent[0].id);
-            }
-            else {
-              setError('Parent information not found for the current user.');
-            }
-          } catch (error) {
-            console.error('Error fetching parent information:', error.response);
-            setError('Failed to fetch parent information. Please try again.');
+          const parent = await fetchParentData(user, jwt);
+          if (parent) {
+            setParentId(parent.id);
+          } else {
+            setError('Parent information not found for the current user.');
           }
         } else {
           setError('Parent information not found for the current user.');

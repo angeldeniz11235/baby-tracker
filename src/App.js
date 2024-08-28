@@ -13,6 +13,7 @@ import Signup from "./components/Signup";
 import Dashboard from "./components/Dashboard";
 import NewBaby from "./components/NewBaby";
 import BabyDetails from "./components/BabyDetails";
+import DiaperChange from "./components/DiaperChange";
 import ProtectedRoute from "./components/ProtectedRoute";
 
 function App() {
@@ -60,6 +61,7 @@ function App() {
         />
         <Route path="/new-baby" element={<NewBaby />} />
         <Route path="/baby/:babyId" element={<BabyDetails />} />
+        <Route path="/baby/:babyId/diaper-change" element={<DiaperChange />} />
       </Routes>
     </div>
   );
