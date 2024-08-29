@@ -13,7 +13,9 @@ function BabyDetails() {
   const { babyId } = useParams();
   const [baby, setBaby] = useState(null);
   const [diaperChanges, setDiaperChanges] = useState([]);
-  const [expanded, setExpanded] = useState(false);
+  const [feedings, setFeedings] = useState([]);
+  const [expandedDiaperChanges, setExpandedDiaperChanges] = useState(false);
+  const [expandedFeedings, setExpandedFeedings] = useState(false);
 
   useEffect(() => {
     const jwt = Cookies.get("jwt");
@@ -46,19 +48,40 @@ function BabyDetails() {
         .catch((error) => {
           console.error("Error fetching diaper changes:", error.response);
         });
+
+      // Fetch feedings
+      axios
+        .get(`http://localhost:1337/api/feedings?filters[baby]=${babyId}`, {
+          headers: {
+            Authorization: `Bearer ${jwt}`,
+          },
+        })
+        .then((response) => {
+          setFeedings(response.data.data);
+        })
+        .catch((error) => {
+          console.error("Error fetching feedings:", error.response);
+        });
     }
   }, [babyId]);
 
   if (!baby) return <div>Loading...</div>;
 
-  //sort diaper changes by time in descending order
+  // Sort diaper changes by time in descending order
   diaperChanges.sort(
     (a, b) => new Date(b.attributes.time) - new Date(a.attributes.time)
   );
 
-  const displayedDiaperChanges = expanded
+  // Sort feedings by time in descending order
+  feedings.sort(
+    (a, b) => new Date(b.attributes.time) - new Date(a.attributes.time)
+  );
+
+  const displayedDiaperChanges = expandedDiaperChanges
     ? diaperChanges
     : diaperChanges.slice(0, 1);
+
+  const displayedFeedings = expandedFeedings ? feedings : feedings.slice(0, 1);
 
   return (
     <div className="max-w-md mx-auto bg-white shadow-md rounded p-6 min-h-screen flex flex-col justify-center">
@@ -78,60 +101,93 @@ function BabyDetails() {
         <FontAwesomeIcon icon={faPlus} className="mr-2" />
         Add Diaper Change
       </Link>
+      <Link
+        to={`/baby/${babyId}/feeding`}
+        className="w-full p-2 bg-green-500 text-white rounded hover:bg-green-600 flex items-center justify-center mb-4"
+      >
+        <FontAwesomeIcon icon={faPlus} className="mr-2" />
+        Add Feeding
+      </Link>
       {diaperChanges.length === 0 && <p>No diaper changes recorded</p>}
-      <div className="mb-4">
+      <div className="mb-4 bg-gray-100 p-4 rounded">
         {diaperChanges.length > 0 && (
           <>
             <h3 className="text-xl font-bold mb-2">Recent Diaper Changes</h3>
-            {!expanded && (
-              <ul className="space-y-2">
-                {displayedDiaperChanges.map((change, index) => (
-                  <li key={index} className="border-b pb-2">
-                    <p>
-                      <strong>Time:</strong>{" "}
-                      {new Date(change.attributes.time).toLocaleString()}
-                    </p>
-                    <p>
-                      <strong>Type:</strong> {change.attributes.type}
-                    </p>
-                  </li>
-                ))}
-              </ul>
-            )}
+            <ul className="space-y-2">
+              {displayedDiaperChanges.map((change, index) => (
+                <li key={index} className="border-b pb-2">
+                  <p>
+                    <strong>Time:</strong>{" "}
+                    {new Date(change.attributes.time).toLocaleString()}
+                  </p>
+                  <p>
+                    <strong>Type:</strong> {change.attributes.type}
+                  </p>
+                  <Link
+                    to={`/baby/${babyId}/diaper-change/edit/${change.id}`}
+                    className="text-blue-500 hover:underline"
+                  >
+                    Edit
+                  </Link>
+                </li>
+              ))}
+            </ul>
             {diaperChanges.length > 1 && (
               <button
-                onClick={() => setExpanded(!expanded)}
+                onClick={() => setExpandedDiaperChanges(!expandedDiaperChanges)}
                 className="w-full p-2 bg-gray-200 text-gray-700 rounded hover:bg-gray-300 flex items-center justify-center mt-2"
               >
                 <FontAwesomeIcon
-                  icon={expanded ? faChevronUp : faChevronDown}
+                  icon={expandedDiaperChanges ? faChevronUp : faChevronDown}
                   className="mr-2"
                 />
-                {expanded ? "Show Less" : "Show More"}
+                {expandedDiaperChanges ? "Show Less" : "Show More"}
               </button>
-            )}
-            {expanded && (
-                <div className="max-h-64 overflow-y-auto">
-                <ul className="space-y-2">
-                  {diaperChanges.map((change, index) => (
-                    <li key={index} className="border-b pb-2">
-                      <p>
-                        <strong>Time:</strong>{" "}
-                        {new Date(change.attributes.time).toLocaleString()}
-                      </p>
-                      <p>
-                        <strong>Type:</strong> {change.attributes.type}
-                      </p>
-                    </li>
-                  ))}
-                </ul>
-              </div>
             )}
           </>
         )}
       </div>
 
-      
+      {/* Add Feeding section */}
+      {feedings.length === 0 && <p>No feedings recorded</p>}
+      <div className="mb-4 bg-gray-200 p-4 rounded">
+        {feedings.length > 0 && (
+          <>
+            <h3 className="text-xl font-bold mb-2">Recent Feedings</h3>
+            <ul className="space-y-2">
+              {displayedFeedings.map((feeding, index) => (
+                <li key={index} className="border-b pb-2">
+                  <p>
+                    <strong>Time:</strong>{" "}
+                    {new Date(feeding.attributes.time).toLocaleString()}
+                  </p>
+                  <p>
+                    <strong>Amount:</strong> {feeding.attributes.amount} ml
+                  </p>
+                  <Link
+                    to={`/baby/${babyId}/feeding/edit/${feeding.id}`}
+                    className="text-blue-500 hover:underline"
+                  >
+                    Edit
+                  </Link>
+                </li>
+              ))}
+            </ul>
+            {feedings.length > 1 && (
+              <button
+                onClick={() => setExpandedFeedings(!expandedFeedings)}
+                className="w-full p-2 bg-gray-300 text-gray-700 rounded hover:bg-gray-400 flex items-center justify-center mt-2"
+              >
+                <FontAwesomeIcon
+                  icon={expandedFeedings ? faChevronUp : faChevronDown}
+                  className="mr-2"
+                />
+                {expandedFeedings ? "Show Less" : "Show More"}
+              </button>
+            )}
+          </>
+        )}
+      </div>
     </div>
   );
 }

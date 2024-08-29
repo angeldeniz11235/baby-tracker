@@ -14,6 +14,9 @@ import Dashboard from "./components/Dashboard";
 import NewBaby from "./components/NewBaby";
 import BabyDetails from "./components/BabyDetails";
 import DiaperChange from "./components/DiaperChange";
+import EditDiaperChange from "./components/EditDiaperChange";
+import Feeding from "./components/Feeding";
+import EditFeeding from "./components/EditFeeding";
 import ProtectedRoute from "./components/ProtectedRoute";
 
 function App() {
@@ -62,6 +65,9 @@ function App() {
         <Route path="/new-baby" element={<NewBaby />} />
         <Route path="/baby/:babyId" element={<BabyDetails />} />
         <Route path="/baby/:babyId/diaper-change" element={<DiaperChange />} />
+        <Route path="/baby/:babyId/diaper-change/edit/:changeId" element={<EditDiaperChange />} />
+        <Route path="/baby/:babyId/feeding" element={<Feeding />} />
+        <Route path="/baby/:babyId/feeding/edit/:feedingId" element={<EditFeeding />} />
       </Routes>
     </div>
   );
