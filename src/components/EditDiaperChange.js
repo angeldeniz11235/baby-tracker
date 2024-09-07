@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import axios from "axios";
 import Cookies from "js-cookie";
 import { useNavigate, useParams } from "react-router-dom";
+import getStrapiURL from "./functions/getStrapiURL";
 
 function EditDiaperChange() {
   const { babyId, changeId } = useParams();
@@ -14,8 +15,9 @@ function EditDiaperChange() {
     const fetchDiaperChange = async () => {
       const jwt = Cookies.get("jwt");
       try {
+        const url = getStrapiURL() + "/api";
         const response = await axios.get(
-          `http://localhost:1337/api/diaper-changes/${changeId}`,
+          url + `/diaper-changes/${changeId}`,
           {
             headers: {
               Authorization: `Bearer ${jwt}`,
@@ -23,7 +25,14 @@ function EditDiaperChange() {
           }
         );
         const { time, type } = response.data.data.attributes;
-        setTime(new Date(time).toISOString().slice(0, 16));
+        // Convert UTC time to local time
+        const utcDate = new Date(time);
+        //convert to local time
+        const now = new Date();
+        const offset = now.getTimezoneOffset();
+        const localTime = new Date(utcDate.getTime() - offset * 60 * 1000);
+        //const localTime = utcDate;
+        setTime(localTime.toISOString().slice(0, 16));
         setType(type);
       } catch (error) {
         console.error("Error fetching diaper change:", error.response);
@@ -33,6 +42,10 @@ function EditDiaperChange() {
 
     fetchDiaperChange();
   }, [changeId]);
+
+  const handleInputChange = (e) => {
+    setTime(e.target.value);
+  };
 
   const handleUpdateDiaperChange = async (e) => {
     e.preventDefault();
@@ -44,11 +57,16 @@ function EditDiaperChange() {
     }
 
     try {
+      const url = getStrapiURL() + "/api";
+      // Convert local time to UTC
+      const localDate = new Date(time);
+      const utcDate = new Date(localDate.getTime() + localDate.getTimezoneOffset() * 60000);
+
       await axios.put(
-        `http://localhost:1337/api/diaper-changes/${changeId}`,
+        url + `/diaper-changes/${changeId}`,
         {
           data: {
-            time: time,
+            time: utcDate.toISOString(),
             type: type,
           },
         },
@@ -77,7 +95,7 @@ function EditDiaperChange() {
         <input
           type="datetime-local"
           value={time}
-          onChange={(e) => setTime(e.target.value)}
+          onChange={handleInputChange}
           className="w-full p-2 border border-gray-300 rounded"
           required
         />

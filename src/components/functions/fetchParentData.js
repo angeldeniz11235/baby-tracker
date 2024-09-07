@@ -1,9 +1,11 @@
 import axios from "axios";
+import getStrapiURL from "./getStrapiURL";
 
 export async function fetchParentData(user, jwt) {
   try {
+    const url = getStrapiURL() + "/api";
     const parentResponse = await axios.get(
-      `http://localhost:1337/api/parents?user=${user.id}`,
+      url + `/parents?user=${user.id}`,
       {
         headers: {
           Authorization: `Bearer ${jwt}`,

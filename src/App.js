@@ -18,6 +18,8 @@ import EditDiaperChange from "./components/EditDiaperChange";
 import Feeding from "./components/Feeding";
 import EditFeeding from "./components/EditFeeding";
 import ProtectedRoute from "./components/ProtectedRoute";
+import Metrics from "./components/Metrics";
+import BackButton from "./components/BackButton";
 
 function App() {
   const navigate = useNavigate();
@@ -38,12 +40,15 @@ function App() {
   return (
     <div>
       <nav className="bg-gray-100 p-4 flex justify-between items-center border-b border-gray-300">
-        <Link
-          to="/dashboard"
-          className="text-blue-500 font-bold hover:underline"
-        >
-          Dashboard
-        </Link>
+        <div className="flex items-center">
+          <BackButton /> {/* Add BackButton here */}
+          <Link
+            to="/dashboard"
+            className="ml-4 text-blue-500 font-bold hover:underline"
+          >
+            Dashboard
+          </Link>
+        </div>
         <button
           onClick={handleLogout}
           className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600"
@@ -65,9 +70,16 @@ function App() {
         <Route path="/new-baby" element={<NewBaby />} />
         <Route path="/baby/:babyId" element={<BabyDetails />} />
         <Route path="/baby/:babyId/diaper-change" element={<DiaperChange />} />
-        <Route path="/baby/:babyId/diaper-change/edit/:changeId" element={<EditDiaperChange />} />
+        <Route
+          path="/baby/:babyId/diaper-change/edit/:changeId"
+          element={<EditDiaperChange />}
+        />
         <Route path="/baby/:babyId/feeding" element={<Feeding />} />
-        <Route path="/baby/:babyId/feeding/edit/:feedingId" element={<EditFeeding />} />
+        <Route
+          path="/baby/:babyId/feeding/edit/:feedingId"
+          element={<EditFeeding />}
+        />
+        <Route path="/baby/:babyId/metrics" element={<Metrics />} />
       </Routes>
     </div>
   );

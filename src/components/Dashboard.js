@@ -5,6 +5,7 @@ import Cookies from "js-cookie";
 import Logout from "./Logout";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faTrash } from "@fortawesome/free-solid-svg-icons";
+import getStrapiURL from "./functions/getStrapiURL";
 
 function Dashboard() {
   const [babies, setBabies] = useState([]);
@@ -13,7 +14,10 @@ function Dashboard() {
   const navigate = useNavigate();
   const [isAuthenticated, setIsAuthenticated] = useState(true);
 
+
   useEffect(() => {
+    const url = getStrapiURL() + "/api/babies";
+    console.log("dashboard url: ", url);
     const fetchBabies = async () => {
       const jwt = Cookies.get("jwt");
       if (!jwt) {
@@ -21,7 +25,7 @@ function Dashboard() {
         navigate("/");
       } else {
         try {
-          const response = await axios.get("http://localhost:1337/api/babies", {
+          const response = await axios.get(url, {
             headers: {
               Authorization: `Bearer ${jwt}`,
             },
@@ -47,9 +51,10 @@ function Dashboard() {
   };
 
   const handleDeleteBaby = async (babyId) => {
+    const url = getStrapiURL() + "/api/babies";
     const jwt = Cookies.get("jwt");
     try {
-      await axios.delete(`http://localhost:1337/api/babies/${babyId}`, {
+      await axios.delete(url + `/${babyId}`, {
         headers: {
           Authorization: `Bearer ${jwt}`,
         },

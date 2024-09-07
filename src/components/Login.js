@@ -3,6 +3,7 @@ import React, { useEffect, useState } from "react";
 import axios from "axios";
 import Cookies from "js-cookie";
 import { useNavigate } from "react-router-dom";
+import getStrapiURL from "./functions/getStrapiURL";
 
 function Login() {
   const [identifier, setIdentifier] = useState(""); // Updated to handle both username and email
@@ -19,9 +20,10 @@ function Login() {
 
   const handleLogin = async (e) => {
     e.preventDefault();
+    const url = getStrapiURL() + "/api/auth/local";
     try {
       const response = await axios.post(
-        "http://localhost:1337/api/auth/local",
+        url,
         {
           identifier: identifier, // Use identifier to handle both username and email
           password: password,

@@ -1,8 +1,10 @@
 import axios from 'axios';
+import getStrapiURL from './getStrapiURL';
 
 export async function fetchUserData(jwt) {
   try {
-    const response = await axios.get("http://localhost:1337/api/users/me", {
+    const url = getStrapiURL() + "/api";
+    const response = await axios.get(url + "/users/me", {
       headers: {
         Authorization: `Bearer ${jwt}`,
       },

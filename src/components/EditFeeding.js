@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import axios from "axios";
 import Cookies from "js-cookie";
 import { useNavigate, useParams } from "react-router-dom";
+import getStrapiURL from "./functions/getStrapiURL";
 
 function EditFeeding() {
   const { babyId, feedingId } = useParams();
@@ -11,11 +12,12 @@ function EditFeeding() {
   const navigate = useNavigate();
 
   useEffect(() => {
+    const url = getStrapiURL() + "/api";
     const fetchFeeding = async () => {
       const jwt = Cookies.get("jwt");
       try {
         const response = await axios.get(
-          `http://localhost:1337/api/feedings/${feedingId}`,
+          url + `/feedings/${feedingId}`,
           {
             headers: {
               Authorization: `Bearer ${jwt}`,
@@ -23,7 +25,11 @@ function EditFeeding() {
           }
         );
         const { time, amount } = response.data.data.attributes;
-        setTime(new Date(time).toISOString().slice(0, 16));
+        // Convert UTC time to local time
+        const utcDate = new Date(time);
+        const offset = utcDate.getTimezoneOffset();
+        const localDate = new Date(utcDate.getTime() - offset * 60 * 1000);
+        setTime(new Date(localDate).toISOString().slice(0, 16));
         setAmount(amount);
       } catch (error) {
         console.error("Error fetching feeding:", error.response);
@@ -44,11 +50,16 @@ function EditFeeding() {
     }
 
     try {
+      const url = getStrapiURL() + "/api";
+      // Convert time to UTC
+      const utcDate = new Date(time);
+      const offset = utcDate.getTimezoneOffset();
+      const utcTime = new Date(utcDate.getTime() + offset * 60 * 1000);
       await axios.put(
-        `http://localhost:1337/api/feedings/${feedingId}`,
+        url + `/feedings/${feedingId}`,
         {
           data: {
-            time: time,
+            time: utcTime,
             amount: amount,
           },
         },

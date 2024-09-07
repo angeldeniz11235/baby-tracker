@@ -7,7 +7,10 @@ import {
   faPlus,
   faChevronDown,
   faChevronUp,
+  faTrash,
+  faChartBar,
 } from "@fortawesome/free-solid-svg-icons";
+import getStrapiURL from "./functions/getStrapiURL";
 
 function BabyDetails() {
   const { babyId } = useParams();
@@ -16,12 +19,19 @@ function BabyDetails() {
   const [feedings, setFeedings] = useState([]);
   const [expandedDiaperChanges, setExpandedDiaperChanges] = useState(false);
   const [expandedFeedings, setExpandedFeedings] = useState(false);
+  const [showModal, setShowModal] = useState(false);
+  const [selectedEntry, setSelectedEntry] = useState(null);
+  const [entryType, setEntryType] = useState("");
 
   useEffect(() => {
+    const url = getStrapiURL() + "/api";
+
+    console.log("baby details url: ", url);
+
     const jwt = Cookies.get("jwt");
     if (jwt) {
       axios
-        .get(`http://localhost:1337/api/babies/${babyId}`, {
+        .get( url + `/babies/${babyId}`, {
           headers: {
             Authorization: `Bearer ${jwt}`,
           },
@@ -35,7 +45,7 @@ function BabyDetails() {
 
       axios
         .get(
-          `http://localhost:1337/api/diaper-changes?filters[baby]=${babyId}`,
+          url + `/diaper-changes?filters[baby]=${babyId}`,
           {
             headers: {
               Authorization: `Bearer ${jwt}`,
@@ -51,7 +61,7 @@ function BabyDetails() {
 
       // Fetch feedings
       axios
-        .get(`http://localhost:1337/api/feedings?filters[baby]=${babyId}`, {
+        .get( url + `/feedings?filters[baby]=${babyId}`, {
           headers: {
             Authorization: `Bearer ${jwt}`,
           },
@@ -82,6 +92,45 @@ function BabyDetails() {
     : diaperChanges.slice(0, 1);
 
   const displayedFeedings = expandedFeedings ? feedings : feedings.slice(0, 1);
+
+  const openModal = (entry, type) => {
+    setSelectedEntry(entry);
+    setEntryType(type);
+    setShowModal(true);
+  };
+
+  const closeModal = () => {
+    setSelectedEntry(null);
+    setEntryType("");
+    setShowModal(false);
+  };
+
+  const handleDeleteEntry = async () => {
+    const url = getStrapiURL() + "/api";
+    const jwt = Cookies.get("jwt");
+    try {
+      await axios.delete(
+        url + `/${entryType}/${selectedEntry.id}`,
+        {
+          headers: {
+            Authorization: `Bearer ${jwt}`,
+          },
+        }
+      );
+      if (entryType === "diaper-changes") {
+        setDiaperChanges(
+          diaperChanges.filter((change) => change.id !== selectedEntry.id)
+        );
+      } else if (entryType === "feedings") {
+        setFeedings(
+          feedings.filter((feeding) => feeding.id !== selectedEntry.id)
+        );
+      }
+      closeModal();
+    } catch (error) {
+      console.error(`Error deleting ${entryType}:`, error);
+    }
+  };
 
   return (
     <div className="max-w-md mx-auto bg-white shadow-md rounded p-6 min-h-screen flex flex-col justify-center">
@@ -115,10 +164,14 @@ function BabyDetails() {
             <h3 className="text-xl font-bold mb-2">Recent Diaper Changes</h3>
             <ul className="space-y-2">
               {displayedDiaperChanges.map((change, index) => (
-                <li key={index} className="border-b pb-2">
+                <li key={index} className="border-b pb-2 relative">
                   <p>
                     <strong>Time:</strong>{" "}
-                    {new Date(change.attributes.time).toLocaleString()}
+                    {(() => {
+                      const utcDate = new Date(change.attributes.time);
+                      const localDate = new Date(utcDate.getTime() - utcDate.getTimezoneOffset() * 60000);
+                      return localDate.toLocaleString();
+                    })()}
                   </p>
                   <p>
                     <strong>Type:</strong> {change.attributes.type}
@@ -129,6 +182,11 @@ function BabyDetails() {
                   >
                     Edit
                   </Link>
+                  <FontAwesomeIcon
+                    icon={faTrash}
+                    className="absolute top-2 right-2 text-red-500 hover:text-red-700 cursor-pointer"
+                    onClick={() => openModal(change, "diaper-changes")}
+                  />
                 </li>
               ))}
             </ul>
@@ -156,10 +214,14 @@ function BabyDetails() {
             <h3 className="text-xl font-bold mb-2">Recent Feedings</h3>
             <ul className="space-y-2">
               {displayedFeedings.map((feeding, index) => (
-                <li key={index} className="border-b pb-2">
+                <li key={index} className="border-b pb-2 relative">
                   <p>
                     <strong>Time:</strong>{" "}
-                    {new Date(feeding.attributes.time).toLocaleString()}
+                    {(() => {
+                      const utcDate = new Date(feeding.attributes.time);
+                      const localDate = new Date(utcDate.getTime() - utcDate.getTimezoneOffset() * 60000);
+                      return localDate.toLocaleString();
+                    })()}
                   </p>
                   <p>
                     <strong>Amount:</strong> {feeding.attributes.amount} ml
@@ -170,6 +232,11 @@ function BabyDetails() {
                   >
                     Edit
                   </Link>
+                  <FontAwesomeIcon
+                    icon={faTrash}
+                    className="absolute top-2 right-2 text-red-500 hover:text-red-700 cursor-pointer"
+                    onClick={() => openModal(feeding, "feedings")}
+                  />
                 </li>
               ))}
             </ul>
@@ -188,6 +255,36 @@ function BabyDetails() {
           </>
         )}
       </div>
+
+      {showModal && (
+        <div className="fixed inset-0 bg-gray-600 bg-opacity-50 flex items-center justify-center">
+          <div className="bg-white p-6 rounded shadow-md">
+            <h3 className="text-xl mb-4">Confirm Deletion</h3>
+            <p>Are you sure you want to delete this entry?</p>
+            <div className="mt-4 flex justify-end space-x-2">
+              <button
+                onClick={handleDeleteEntry}
+                className="px-4 py-2 bg-red-500 text-white rounded hover:bg-red-600"
+              >
+                Delete
+              </button>
+              <button
+                onClick={closeModal}
+                className="px-4 py-2 bg-gray-300 rounded hover:bg-gray-400"
+              >
+                Cancel
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+      <Link
+        to={`/baby/${babyId}/metrics`}
+        className="w-full p-2 bg-purple-500 text-white rounded hover:bg-purple-600 flex items-center justify-center mb-4"
+      >
+        <FontAwesomeIcon icon={faChartBar} className="mr-2" />
+        View Metrics
+      </Link>
     </div>
   );
 }

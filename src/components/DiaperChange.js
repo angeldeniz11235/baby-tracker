@@ -5,10 +5,17 @@ import Cookies from "js-cookie";
 import { useNavigate, useParams } from "react-router-dom";
 import { fetchParentData } from "./functions/fetchParentData";
 import { fetchUserData } from "./functions/fetchUserData";
+import getStrapiURL from "./functions/getStrapiURL";
 
 function DiaperChange() {
+  const getCurrentLocalTime = () => {
+    const now = new Date();
+    const offset = now.getTimezoneOffset();
+    const localTime = new Date(now.getTime() - offset * 60 * 1000);
+    return localTime.toISOString().slice(0, 16);
+  };
   const { babyId } = useParams();
-  const [time, setTime] = useState(new Date().toISOString().slice(0, 16));
+  const [time, setTime] = useState(getCurrentLocalTime());
   const [type, setType] = useState("Both");
   const [error, setError] = useState("");
   const [parentId, setParentId] = useState(null);
@@ -49,11 +56,17 @@ function DiaperChange() {
     }
 
     try {
+      const url = getStrapiURL() + "/api";
+      // Convert time to UTC
+      const utcDate = new Date(time);
+      const offset = utcDate.getTimezoneOffset();
+      const utcTime = new Date(utcDate.getTime() + offset * 60 * 1000);
+
       await axios.post(
-        "http://localhost:1337/api/diaper-changes",
+        url + "/diaper-changes",
         {
           data: {
-            time: time,
+            time: utcTime,
             type: type,
             baby: babyId,
             parent: parentId,

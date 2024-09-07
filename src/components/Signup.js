@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
 import Cookies from 'js-cookie'; // Import js-cookie
+import getStrapiURL from './functions/getStrapiURL';
 
 function Signup() {
   const [username, setUsername] = useState('');
@@ -28,8 +29,9 @@ function Signup() {
     }
 
     try {
+      const url = getStrapiURL() + '/api'
       // Check if username or email already exists
-      const existingUserResponse = await axios.get('http://localhost:1337/api/users', {
+      const existingUserResponse = await axios.get(url + '/users', {
         params: {
           _where: {
             _or: [
@@ -46,7 +48,7 @@ function Signup() {
       }
 
       // Create the user
-      const userResponse = await axios.post('http://localhost:1337/api/auth/local/register', {
+      const userResponse = await axios.post(url + '/auth/local/register', {
         username: username,
         email: email,
         password: password,
@@ -56,7 +58,7 @@ function Signup() {
       const jwt = userResponse.data.jwt;
 
       // Create the parent
-      await axios.post('http://localhost:1337/api/parents', {
+      await axios.post(url + '/parents', {
         data: {
           name: fullName,
           email: email,

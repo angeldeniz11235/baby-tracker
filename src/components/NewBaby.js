@@ -5,6 +5,7 @@ import { useNavigate } from 'react-router-dom';
 import Cookies from 'js-cookie';
 import { fetchUserData } from './functions/fetchUserData';
 import { fetchParentData } from './functions/fetchParentData';
+import getStrapiURL from './functions/getStrapiURL';
 
 function NewBaby() {
   const [name, setName] = useState('');
@@ -49,8 +50,9 @@ function NewBaby() {
     }
 
     try {
+      const url = getStrapiURL() + '/api';
       console.log('Creating baby with parent ID:', parentId); // Debugging line
-      await axios.post('http://localhost:1337/api/babies', 
+      await axios.post(url + '/babies', 
       {
         data: {
           name: name,
