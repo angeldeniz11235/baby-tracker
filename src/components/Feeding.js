@@ -113,14 +113,17 @@ function Feeding() {
           <option value="Formula">Formula</option>
           <option value="Solid Food">Solid Food</option>
         </select>
-        <input
-          type="number"
-          value={amount}
-          onChange={(e) => setAmount(e.target.value)}
-          className="w-full p-2 border border-gray-300 rounded"
-          placeholder="Amount (ml)"
-          required
-        />
+        <label className="block text-gray-700">
+          Amount (ml)
+          <input
+            type="number"
+            value={amount}
+            onChange={(e) => setAmount(e.target.value)}
+            className="w-full p-2 border border-gray-300 rounded"
+            placeholder="Amount (ml)"
+            required
+          />
+        </label>
         <button
           type="submit"
           className="w-full p-2 bg-blue-500 text-white rounded hover:bg-blue-600"

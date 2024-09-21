@@ -1,12 +1,14 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
 import Cookies from "js-cookie";
-import { useNavigate, useParams } from "react-router-dom";
+import { useNavigate, useParams, useLocation } from "react-router-dom";
 import getStrapiURL from "./functions/getStrapiURL";
 
 function EditDiaperChange() {
   const { babyId, changeId } = useParams();
-  const [time, setTime] = useState("");
+  const location = useLocation();
+  const { currentTime } = location.state || {};
+  const [time, setTime] = useState(currentTime || "");
   const [type, setType] = useState("");
   const [error, setError] = useState("");
   const navigate = useNavigate();
@@ -27,12 +29,13 @@ function EditDiaperChange() {
         const { time, type } = response.data.data.attributes;
         // Convert UTC time to local time
         const utcDate = new Date(time);
-        //convert to local time
-        const now = new Date();
-        const offset = now.getTimezoneOffset();
-        const localTime = new Date(utcDate.getTime() - offset * 60 * 1000);
-        //const localTime = utcDate;
-        setTime(localTime.toISOString().slice(0, 16));
+        const localDate = new Date(utcDate.getTime() - utcDate.getTimezoneOffset() * 60000);
+        const localTimeString = localDate.getFullYear() + '-' +
+          String(localDate.getMonth() + 1).padStart(2, '0') + '-' +
+          String(localDate.getDate()).padStart(2, '0') + 'T' +
+          String(localDate.getHours()).padStart(2, '0') + ':' +
+          String(localDate.getMinutes()).padStart(2, '0');
+        setTime(localTimeString);
         setType(type);
       } catch (error) {
         console.error("Error fetching diaper change:", error.response);
@@ -40,8 +43,10 @@ function EditDiaperChange() {
       }
     };
 
-    fetchDiaperChange();
-  }, [changeId]);
+    if (!currentTime) {
+      fetchDiaperChange();
+    }
+  }, [changeId, currentTime]);
 
   const handleInputChange = (e) => {
     setTime(e.target.value);
