@@ -86,7 +86,8 @@ function App() {
 }
 
 const basename = process.env.REACT_APP_ENVIRONMENT === 'DEV' ? '/' : '/babytracker';
-
+console.log(`Environment: ${process.env.REACT_APP_ENVIRONMENT}`);
+console.log(`Basename: ${basename}`);
 export default function AppWrapper() {
   return (
     <Router basename={basename}>
