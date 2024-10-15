@@ -20,6 +20,7 @@ import EditFeeding from "./components/EditFeeding";
 import ProtectedRoute from "./components/ProtectedRoute";
 import Metrics from "./components/Metrics";
 import BackButton from "./components/BackButton";
+import AddCaregiver from "./components/AddCaregiver";
 
 function App() {
   const navigate = useNavigate();
@@ -80,6 +81,7 @@ function App() {
           element={<EditFeeding />}
         />
         <Route path="/baby/:babyId/metrics" element={<Metrics />} />
+        <Route path="/baby/:babyId/add-caregiver" element={<AddCaregiver />} />
       </Routes>
     </div>
   );

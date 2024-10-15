@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
 import Cookies from "js-cookie";
-import { useParams, Link } from "react-router-dom";
+import { useParams, Link, useNavigate } from "react-router-dom";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
   faPlus,
@@ -14,6 +14,7 @@ import getStrapiURL from "./functions/getStrapiURL";
 
 function BabyDetails() {
   const { babyId } = useParams();
+  const navigate = useNavigate();
   const [baby, setBaby] = useState(null);
   const [diaperChanges, setDiaperChanges] = useState([]);
   const [feedings, setFeedings] = useState([]);
@@ -285,6 +286,13 @@ function BabyDetails() {
         <FontAwesomeIcon icon={faChartBar} className="mr-2" />
         View Metrics
       </Link>
+      <button
+        onClick={() => navigate(`/baby/${babyId}/add-caregiver`)}
+        className="w-full p-2 bg-orange-500 text-white rounded hover:bg-orange-600 flex items-center justify-center mb-4"
+      >
+        <FontAwesomeIcon icon={faPlus} className="mr-2" />
+        Add Caregiver
+      </button>
     </div>
   );
 }
